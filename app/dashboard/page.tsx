@@ -24,7 +24,6 @@ export default function DashboardPage() {
     if (!loading && !user) {
       router.push("/auth/login");
     }
-    // Set current date
     const currentDate = new Date().toISOString().split("T")[0];
     setDate(currentDate);
   }, [user, loading, router]);
@@ -44,6 +43,7 @@ export default function DashboardPage() {
     setSubmitMessage("");
 
     try {
+      // Adicionar relatório ao Firestore
       await addDoc(collection(db, "serviceReports"), {
         technician,
         date,
@@ -51,12 +51,50 @@ export default function DashboardPage() {
         userId: user?.uid,
         createdAt: new Date(),
       });
-      setSubmitMessage("Relatório de serviço enviado com sucesso!");
+
+      // Enviar e-mail via rota de API
+      const emailSubject = `Novo Relatório Técnico - ${date}`;
+      const emailText = `Um novo relatório técnico foi criado por ${technician} em ${date}.\n\nDescrição: ${description}`;
+      const emailHtml = `
+        <h1>Novo Relatório Técnico</h1>
+        <p><strong>Técnico:</strong> ${technician}</p>
+        <p><strong>Data:</strong> ${date}</p>
+        <p><strong>Descrição:</strong></p>
+        <p>${description}</p>
+      `;
+
+      const emailResult = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: process.env.NEXT_PUBLIC_EMAIL_TO || "",
+          subject: emailSubject,
+          text: emailText,
+          html: emailHtml,
+        }),
+      });
+
+      const emailResponse = await emailResult.json();
+
+      if (emailResponse.success) {
+        setSubmitMessage(
+          "Relatório de serviço enviado com sucesso! E-mail enviado."
+        );
+      } else {
+        setSubmitMessage(
+          "Relatório salvo, mas houve um problema ao enviar o e-mail."
+        );
+      }
+
       setTechnician("");
       setDescription("");
     } catch (error) {
-      console.error("Erro ao enviar relatório:", error);
-      setSubmitMessage("Erro ao enviar relatório. Por favor, tente novamente.");
+      console.error("Erro ao processar relatório:", error);
+      setSubmitMessage(
+        "Erro ao processar relatório. Por favor, tente novamente."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -80,7 +118,7 @@ export default function DashboardPage() {
               Ver Relatórios
             </Button>
             <Button
-              className=" rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="text-white bg-red-600 hover:bg-red-700"
               onClick={handleSignOut}
             >
               Sair
