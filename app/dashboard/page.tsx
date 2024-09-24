@@ -11,11 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { sendEmail } from "@/lib/emailService";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [technician, setTechnician] = useState("");
+  const [officeTime, setOfficeTime] = useState("");
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,6 +57,7 @@ export default function DashboardPage() {
       // Adicionar relatório ao Firestore
       const docRef = await addDoc(collection(db, "serviceReports"), {
         technician,
+        officeTime,
         date,
         description,
         userId: user?.uid,
@@ -60,6 +71,7 @@ export default function DashboardPage() {
       const emailHtml = `
         <h1>Novo Relatório Técnico</h1>
         <p><strong>Técnico:</strong> ${technician}</p>
+        <p><strong>Expediente:</strong> ${officeTime}</p>
         <p><strong>Data:</strong> ${date}</p>
         <p><strong>Descrição:</strong></p>
         <p>${description}</p>
@@ -138,6 +150,22 @@ export default function DashboardPage() {
               onChange={(e) => setTechnician(e.target.value)}
               required
             />
+          </div>
+          <div>
+            <Select onValueChange={(value) => setOfficeTime(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Expediente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Horário de Trabalho</SelectLabel>
+                  <SelectItem value="05:00 - 14:00">05:00 - 14:00</SelectItem>
+                  <SelectItem value="08:00 - 18:00">08:00 - 18:00</SelectItem>
+                  <SelectItem value="09:00 - 18:00">09:00 - 18:00</SelectItem>
+                  <SelectItem value="10:00 - 20:00">10:00 - 20:00</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="date">Data</Label>

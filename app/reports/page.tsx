@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 interface Report {
   id: string;
   technician: string;
+  officeTime: string;
   date: string;
   description: string;
 }
@@ -124,6 +125,9 @@ export default function ReportsPage() {
                   <strong>Data:</strong> {report.date}
                 </p>
                 <p>
+                  <strong>Horário:</strong> {report.officeTime}
+                </p>
+                <p>
                   <strong>Descrição:</strong>{" "}
                   {report.description.substring(0, 100)}...
                 </p>
@@ -160,6 +164,9 @@ export default function ReportsPage() {
           <div className="mt-4">
             <p>
               <strong>Data:</strong> {expandedReport?.date}
+            </p>
+            <p>
+              <strong>Horário:</strong> {expandedReport?.officeTime}
             </p>
             <p>
               <strong>Descrição:</strong> {expandedReport?.description}
