@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { sendEmail } from "@/lib/emailService";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -44,15 +45,16 @@ export default function DashboardPage() {
 
     try {
       // Adicionar relatório ao Firestore
-      await addDoc(collection(db, "serviceReports"), {
+      const docRef = await addDoc(collection(db, "serviceReports"), {
         technician,
         date,
         description,
         userId: user?.uid,
         createdAt: new Date(),
       });
+      console.log("Documento criado com ID: ", docRef.id);
 
-      // Enviar e-mail via rota de API
+      // Enviar e-mail
       const emailSubject = `Novo Relatório Técnico - ${date}`;
       const emailText = `Um novo relatório técnico foi criado por ${technician} em ${date}.\n\nDescrição: ${description}`;
       const emailHtml = `
@@ -63,22 +65,21 @@ export default function DashboardPage() {
         <p>${description}</p>
       `;
 
-      const emailResult = await fetch("/api/sendEmail", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: process.env.NEXT_PUBLIC_EMAIL_TO || "",
-          subject: emailSubject,
-          text: emailText,
-          html: emailHtml,
-        }),
+      const emailTo = process.env.NEXT_PUBLIC_EMAIL_TO;
+      if (!emailTo) {
+        throw new Error(
+          "NEXT_PUBLIC_EMAIL_TO não está definido nas variáveis de ambiente"
+        );
+      }
+
+      const emailResult = await sendEmail({
+        to: emailTo,
+        subject: emailSubject,
+        text: emailText,
+        html: emailHtml,
       });
 
-      const emailResponse = await emailResult.json();
-
-      if (emailResponse.success) {
+      if (emailResult.success) {
         setSubmitMessage(
           "Relatório de serviço enviado com sucesso! E-mail enviado."
         );
@@ -88,7 +89,6 @@ export default function DashboardPage() {
         );
       }
 
-      setTechnician("");
       setDescription("");
     } catch (error) {
       console.error("Erro ao processar relatório:", error);

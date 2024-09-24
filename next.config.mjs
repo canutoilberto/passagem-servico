@@ -2,12 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   env: {
-    EMAIL_HOST: process.env.EMAIL_HOST,
-    EMAIL_PORT: process.env.EMAIL_PORT,
-    EMAIL_SECURE: process.env.EMAIL_SECURE,
-    EMAIL_USER: process.env.EMAIL_USER,
-    EMAIL_PASS: process.env.EMAIL_PASS,
-    EMAIL_FROM: process.env.EMAIL_FROM,
+    MAILJET_API_KEY: process.env.MAILJET_API_KEY,
+    MAILJET_SECRET_KEY: process.env.MAILJET_SECRET_KEY,
+    MAILJET_SENDER_EMAIL: process.env.MAILJET_SENDER_EMAIL,
+    MAILJET_SENDER_NAME: process.env.MAILJET_SENDER_NAME,
   },
 };
 
