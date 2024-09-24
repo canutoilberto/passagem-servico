@@ -31,6 +31,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Report {
   id: string;
@@ -48,7 +57,6 @@ export default function ReportsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedReport, setEditedReport] = useState<Report | null>(null);
 
-  // UseCallback para evitar recriação da função em cada render
   const fetchReports = useCallback(async () => {
     if (!user) return;
     const q = query(
@@ -69,7 +77,7 @@ export default function ReportsPage() {
     } else if (user) {
       fetchReports();
     }
-  }, [user, loading, router, fetchReports]); // fetchReports agora está no array de dependências
+  }, [user, loading, router, fetchReports]);
 
   const handleExpand = (report: Report) => {
     setExpandedReport(report);
@@ -91,6 +99,7 @@ export default function ReportsPage() {
     if (!editedReport) return;
     await updateDoc(doc(db, "serviceReports", editedReport.id), {
       technician: editedReport.technician,
+      officeTime: editedReport.officeTime, // Atualizando o horário de trabalho
       date: editedReport.date,
       description: editedReport.description,
     });
@@ -133,12 +142,7 @@ export default function ReportsPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button
-                  className="group relative flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onClick={() => handleExpand(report)}
-                >
-                  Expandir
-                </Button>
+                <Button onClick={() => handleExpand(report)}>Expandir</Button>
                 <Button onClick={() => handleEdit(report)}>Editar</Button>
                 <Button
                   onClick={() => handleDelete(report.id)}
@@ -212,6 +216,30 @@ export default function ReportsPage() {
                   )
                 }
               />
+            </div>
+            <div>
+              <Label htmlFor="edit-officeTime">Horário de Trabalho</Label>
+              <Select
+                value={editedReport?.officeTime || ""}
+                onValueChange={(value) =>
+                  setEditedReport((prev) =>
+                    prev ? { ...prev, officeTime: value } : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o horário" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Horário</SelectLabel>
+                    <SelectItem value="05:00 - 14:00">05:00 - 14:00</SelectItem>
+                    <SelectItem value="08:00 - 18:00">08:00 - 18:00</SelectItem>
+                    <SelectItem value="09:00 - 18:00">09:00 - 18:00</SelectItem>
+                    <SelectItem value="10:00 - 20:00">10:00 - 20:00</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="edit-description">Descrição</Label>
