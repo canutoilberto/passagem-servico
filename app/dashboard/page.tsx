@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
 import { signOut } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { sendEmail } from "@/lib/emailService";
 import {
   Select,
   SelectContent,
@@ -20,23 +18,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useReportForm } from "@/hooks/useReportForm";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [technician, setTechnician] = useState("");
-  const [officeTime, setOfficeTime] = useState("");
-  const [date, setDate] = useState("");
-  const [description, setDescription] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState("");
+  const {
+    technician,
+    setTechnician,
+    setOfficeTime,
+    date,
+    setDate,
+    description,
+    setDescription,
+    isSubmitting,
+    submitMessage,
+    handleSubmit,
+  } = useReportForm(user);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth/login");
     }
-    const currentDate = new Date().toISOString().split("T")[0];
-    setDate(currentDate);
   }, [user, loading, router]);
 
   const handleSignOut = async () => {
@@ -45,70 +48,6 @@ export default function DashboardPage() {
       router.push("/auth/login");
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitMessage("");
-
-    try {
-      // Adicionar relatório ao Firestore
-      const docRef = await addDoc(collection(db, "serviceReports"), {
-        technician,
-        officeTime,
-        date,
-        description,
-        userId: user?.uid,
-        createdAt: new Date(),
-      });
-      console.log("Documento criado com ID: ", docRef.id);
-
-      // Enviar e-mail
-      const emailSubject = `Novo Relatório Técnico - ${date}`;
-      const emailText = `Um novo relatório técnico foi criado por ${technician} em ${date}.\n\nDescrição: ${description}`;
-      const emailHtml = `
-        <h1>Novo Relatório Técnico</h1>
-        <p><strong>Técnico:</strong> ${technician}</p>
-        <p><strong>Expediente:</strong> ${officeTime}</p>
-        <p><strong>Data:</strong> ${date}</p>
-        <p><strong>Descrição:</strong></p>
-        <p>${description}</p>
-      `;
-
-      const emailTo = process.env.NEXT_PUBLIC_EMAIL_TO;
-      if (!emailTo) {
-        throw new Error(
-          "NEXT_PUBLIC_EMAIL_TO não está definido nas variáveis de ambiente"
-        );
-      }
-
-      const emailResult = await sendEmail({
-        to: emailTo,
-        subject: emailSubject,
-        text: emailText,
-        html: emailHtml,
-      });
-
-      if (emailResult.success) {
-        setSubmitMessage(
-          "Relatório de serviço enviado com sucesso! E-mail enviado."
-        );
-      } else {
-        setSubmitMessage(
-          "Relatório salvo, mas houve um problema ao enviar o e-mail."
-        );
-      }
-
-      setDescription("");
-    } catch (error) {
-      console.error("Erro ao processar relatório:", error);
-      setSubmitMessage(
-        "Erro ao processar relatório. Por favor, tente novamente."
-      );
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -152,7 +91,7 @@ export default function DashboardPage() {
             />
           </div>
           <div>
-            <Select onValueChange={(value) => setOfficeTime(value)}>
+            <Select onValueChange={setOfficeTime}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Expediente" />
               </SelectTrigger>

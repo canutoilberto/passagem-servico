@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import dynamic from "next/dynamic";
 import "./globals.css";
 
 import { AuthProvider } from "@/lib/AuthContext";
+
+const PageTransition = dynamic(() => import("@/components/PageTrasition"), {
+  ssr: false,
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,7 +35,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <PageTransition>{children}</PageTransition>
+        </AuthProvider>
       </body>
     </html>
   );

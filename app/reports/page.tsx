@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Definindo o tipo Report de forma mais clara
 interface Report {
   id: string;
   technician: string;
@@ -57,20 +58,28 @@ export default function ReportsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedReport, setEditedReport] = useState<Report | null>(null);
 
+  // Função para buscar relatórios
   const fetchReports = useCallback(async () => {
     if (!user) return;
-    const q = query(
-      collection(db, "serviceReports"),
-      where("userId", "==", user.uid)
-    );
-    const querySnapshot = await getDocs(q);
-    const fetchedReports: Report[] = [];
-    querySnapshot.forEach((doc) => {
-      fetchedReports.push({ id: doc.id, ...doc.data() } as Report);
-    });
-    setReports(fetchedReports);
+
+    try {
+      const q = query(
+        collection(db, "serviceReports"),
+        where("userId", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const fetchedReports = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Report[];
+
+      setReports(fetchedReports);
+    } catch (error) {
+      console.error("Erro ao buscar relatórios:", error);
+    }
   }, [user]);
 
+  // Redireciona se o usuário não estiver logado, ou busca os relatórios se estiver logado
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth/login");
@@ -79,33 +88,42 @@ export default function ReportsPage() {
     }
   }, [user, loading, router, fetchReports]);
 
-  const handleExpand = (report: Report) => {
-    setExpandedReport(report);
-  };
-
+  // Lidar com a edição de um relatório
   const handleEdit = (report: Report) => {
     setEditedReport(report);
     setIsEditing(true);
   };
 
+  // Lidar com a exclusão de um relatório
   const handleDelete = async (reportId: string) => {
-    if (confirm("Tem certeza que deseja excluir este relatório?")) {
+    if (!confirm("Tem certeza que deseja excluir este relatório?")) return;
+
+    try {
       await deleteDoc(doc(db, "serviceReports", reportId));
-      await fetchReports();
+      await fetchReports(); // Atualizar relatórios
+    } catch (error) {
+      console.error("Erro ao excluir relatório:", error);
     }
   };
 
+  // Lidar com a atualização do relatório
   const handleUpdate = async () => {
     if (!editedReport) return;
-    await updateDoc(doc(db, "serviceReports", editedReport.id), {
-      technician: editedReport.technician,
-      officeTime: editedReport.officeTime, // Atualizando o horário de trabalho
-      date: editedReport.date,
-      description: editedReport.description,
-    });
-    setIsEditing(false);
-    setEditedReport(null);
-    await fetchReports();
+
+    try {
+      await updateDoc(doc(db, "serviceReports", editedReport.id), {
+        technician: editedReport.technician,
+        officeTime: editedReport.officeTime,
+        date: editedReport.date,
+        description: editedReport.description,
+      });
+
+      setIsEditing(false);
+      setEditedReport(null);
+      await fetchReports();
+    } catch (error) {
+      console.error("Erro ao atualizar relatório:", error);
+    }
   };
 
   if (loading) {
@@ -142,7 +160,9 @@ export default function ReportsPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button onClick={() => handleExpand(report)}>Expandir</Button>
+                <Button onClick={() => setExpandedReport(report)}>
+                  Expandir
+                </Button>
                 <Button onClick={() => handleEdit(report)}>Editar</Button>
                 <Button
                   onClick={() => handleDelete(report.id)}

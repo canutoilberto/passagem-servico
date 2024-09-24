@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function LoginPage() {
+// Hook para encapsular a lógica do formulário de login
+function useLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,10 +28,8 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
     } catch (error) {
-      console.error(error); // Registro do erro para depuração
-      setErrorMessage(
-        "Falha na autenticação. Por favor, verifique seu e-mail e senha e tente novamente."
-      );
+      console.error("Error during sign in:", error);
+      setErrorMessage("Autenticação falhou. Verifique seu e-mail e senha.");
     } finally {
       setIsLoading(false);
     }
@@ -44,80 +43,86 @@ export default function LoginPage() {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      alert(
-        "Um e-mail de redefinição de senha foi enviado. Por favor, verifique sua caixa de entrada."
-      );
+      alert("E-mail de redefinição de senha enviado.");
     } catch (error) {
-      console.error(error); // Registro do erro para depuração
-      setErrorMessage(
-        "Erro ao enviar e-mail de redefinição de senha. Por favor, tente novamente."
-      );
+      console.error("Error sending reset email:", error);
+      setErrorMessage("Erro ao enviar o e-mail. Tente novamente.");
     }
   };
+
+  return {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isLoading,
+    errorMessage,
+    handleSubmit,
+    handleResetPassword,
+  };
+}
+
+export default function LoginPage() {
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isLoading,
+    errorMessage,
+    handleSubmit,
+    handleResetPassword,
+  } = useLoginForm();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-10 shadow-md">
-        <div>
-          <h2 className="mt-6 text-center text-xl font-extrabold text-gray-900">
-            TI - Passagem de Serviço
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <h2 className="text-center text-xl font-extrabold text-gray-900">
+          TI - Passagem de Serviço
+        </h2>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <Label htmlFor="email" className="sr-only">
-              E-mail corporativo
-            </Label>
+            <Label htmlFor="email">E-mail corporativo</Label>
             <Input
               id="email"
-              name="email"
               type="email"
-              autoComplete="email"
               required
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="E-mail corporativo"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
-            <Label htmlFor="password" className="sr-only">
-              Senha
-            </Label>
+            <Label htmlFor="password">Senha</Label>
             <Input
               id="password"
-              name="password"
               type="password"
-              autoComplete="current-password"
               required
-              className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <a
-                href="#"
-                onClick={handleResetPassword}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Esqueceu sua senha?
-              </a>
-            </div>
+            <a
+              href="#"
+              onClick={handleResetPassword}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Esqueceu sua senha?
+            </a>
           </div>
           <div>
             <Button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full py-2 px-4 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               disabled={isLoading}
             >
               {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </div>
           {errorMessage && (
-            <div className="text-red-500 text-center mt-2">{errorMessage}</div>
+            <div className="text-red-500 text-center">{errorMessage}</div>
           )}
         </form>
       </div>
