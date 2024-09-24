@@ -109,17 +109,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <div>
-            <Button onClick={() => router.push("/reports")} className="mr-2">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+          <h1 className="text-2xl font-bold">Formulário de Ocorrências</h1>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <Button
+              onClick={() => router.push("/reports")}
+              className="w-full sm:w-auto"
+            >
               Ver Relatórios
             </Button>
             <Button
-              className="text-white bg-red-600 hover:bg-red-700"
               onClick={handleSignOut}
+              className="rounded-md text-white bg-red-600 hover:bg-red-700 w-full sm:w-auto"
             >
               Sair
             </Button>
@@ -157,9 +160,9 @@ export default function DashboardPage() {
             />
           </div>
           <Button
-            className="group relative flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             type="submit"
             disabled={isSubmitting}
+            className="rounded-md text-white bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
           >
             {isSubmitting ? "Enviando..." : "Enviar Relatório"}
           </Button>
