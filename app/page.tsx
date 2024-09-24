@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading) {
@@ -15,13 +17,15 @@ export default function HomePage() {
       } else {
         router.push("/auth/login");
       }
+      // Adicione um pequeno atraso para garantir uma transição suave
+      setTimeout(() => setIsLoading(false), 1000);
     }
   }, [user, loading, router]);
 
-  // Exibir um indicador de carregamento enquanto verifica o estado de autenticação
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="text-2xl font-semibold text-gray-800">Carregando...</div>
-    </div>
-  );
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Esta parte provavelmente nunca será renderizada devido ao redirecionamento
+  return null;
 }
