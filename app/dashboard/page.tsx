@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { sendEmail } from "@/lib/emailService";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -24,7 +25,6 @@ export default function DashboardPage() {
     if (!loading && !user) {
       router.push("/auth/login");
     }
-    // Set current date
     const currentDate = new Date().toISOString().split("T")[0];
     setDate(currentDate);
   }, [user, loading, router]);
@@ -44,19 +44,57 @@ export default function DashboardPage() {
     setSubmitMessage("");
 
     try {
-      await addDoc(collection(db, "serviceReports"), {
+      // Adicionar relatório ao Firestore
+      const docRef = await addDoc(collection(db, "serviceReports"), {
         technician,
         date,
         description,
         userId: user?.uid,
         createdAt: new Date(),
       });
-      setSubmitMessage("Relatório de serviço enviado com sucesso!");
-      setTechnician("");
+      console.log("Documento criado com ID: ", docRef.id);
+
+      // Enviar e-mail
+      const emailSubject = `Novo Relatório Técnico - ${date}`;
+      const emailText = `Um novo relatório técnico foi criado por ${technician} em ${date}.\n\nDescrição: ${description}`;
+      const emailHtml = `
+        <h1>Novo Relatório Técnico</h1>
+        <p><strong>Técnico:</strong> ${technician}</p>
+        <p><strong>Data:</strong> ${date}</p>
+        <p><strong>Descrição:</strong></p>
+        <p>${description}</p>
+      `;
+
+      const emailTo = process.env.NEXT_PUBLIC_EMAIL_TO;
+      if (!emailTo) {
+        throw new Error(
+          "NEXT_PUBLIC_EMAIL_TO não está definido nas variáveis de ambiente"
+        );
+      }
+
+      const emailResult = await sendEmail({
+        to: emailTo,
+        subject: emailSubject,
+        text: emailText,
+        html: emailHtml,
+      });
+
+      if (emailResult.success) {
+        setSubmitMessage(
+          "Relatório de serviço enviado com sucesso! E-mail enviado."
+        );
+      } else {
+        setSubmitMessage(
+          "Relatório salvo, mas houve um problema ao enviar o e-mail."
+        );
+      }
+
       setDescription("");
     } catch (error) {
-      console.error("Erro ao enviar relatório:", error);
-      setSubmitMessage("Erro ao enviar relatório. Por favor, tente novamente.");
+      console.error("Erro ao processar relatório:", error);
+      setSubmitMessage(
+        "Erro ao processar relatório. Por favor, tente novamente."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -80,7 +118,7 @@ export default function DashboardPage() {
               Ver Relatórios
             </Button>
             <Button
-              className=" rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="text-white bg-red-600 hover:bg-red-700"
               onClick={handleSignOut}
             >
               Sair
