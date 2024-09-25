@@ -138,7 +138,10 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Meus Relatórios</h1>
-        <Button onClick={() => router.push("/dashboard")} className="mb-4">
+        <Button
+          onClick={() => router.push("/dashboard")}
+          className="mb-4 text-white bg-gray-800 hover:bg-gray-900"
+        >
           Voltar para o Dashboard
         </Button>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -160,11 +163,20 @@ export default function ReportsPage() {
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button onClick={() => setExpandedReport(report)}>
+                <Button
+                  className=" text-white bg-blue-500 hover:bg-blue-600"
+                  onClick={() => setExpandedReport(report)}
+                >
                   Expandir
                 </Button>
-                <Button onClick={() => handleEdit(report)}>Editar</Button>
                 <Button
+                  className=" text-white bg-indigo-500 hover:bg-indigo-600"
+                  onClick={() => handleEdit(report)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  className=" text-white bg-red-600 hover:bg-red-700"
                   onClick={() => handleDelete(report.id)}
                   variant="destructive"
                 >
@@ -181,7 +193,7 @@ export default function ReportsPage() {
         open={!!expandedReport}
         onOpenChange={() => setExpandedReport(null)}
       >
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
             <DialogTitle>{expandedReport?.technician}</DialogTitle>
           </DialogHeader>
@@ -207,7 +219,7 @@ export default function ReportsPage() {
           if (!open) setEditedReport(null);
         }}
       >
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
             <DialogTitle>Editar Relatório</DialogTitle>
           </DialogHeader>
@@ -251,7 +263,7 @@ export default function ReportsPage() {
                   <SelectValue placeholder="Selecione o horário" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
+                  <SelectGroup className="bg-white text-gray-900">
                     <SelectLabel>Horário</SelectLabel>
                     <SelectItem value="05:00 - 14:00">05:00 - 14:00</SelectItem>
                     <SelectItem value="08:00 - 18:00">08:00 - 18:00</SelectItem>
@@ -275,7 +287,12 @@ export default function ReportsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleUpdate}>Salvar Alterações</Button>
+            <Button
+              className=" text-white bg-blue-500 hover:bg-blue-600"
+              onClick={handleUpdate}
+            >
+              Salvar Alterações
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
