@@ -67,7 +67,7 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
             <Button
               onClick={() => router.push("/reports")}
-              className="w-full sm:w-auto"
+              className="w-full text-white bg-blue-500 hover:bg-blue-600 sm:w-auto "
             >
               Ver Relatórios
             </Button>
@@ -96,7 +96,7 @@ export default function DashboardPage() {
                 <SelectValue placeholder="Expediente" />
               </SelectTrigger>
               <SelectContent>
-                <SelectGroup>
+                <SelectGroup className="bg-white text-gray-900">
                   <SelectLabel>Horário de Trabalho</SelectLabel>
                   <SelectItem value="05:00 - 14:00">05:00 - 14:00</SelectItem>
                   <SelectItem value="08:00 - 18:00">08:00 - 18:00</SelectItem>
